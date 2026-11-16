@@ -1,0 +1,49 @@
+name: Update daily data and publish site
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  schedule:
+    # 09:05 Taipei time (UTC+8), Monday to Friday. GitHub can delay scheduled runs.
+    - cron: '5 1 * * 1-5'
+    - cron: '40 5 * * 1-5'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+      - name: Set up Python for hosted data collection
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Collect news and Taiwan stock snapshot
+        run: python scripts/update_data.py
+      - name: Prepare static site files
+        run: |
+          mkdir -p _site/data
+          cp index.html _site/index.html
+          cp data/stocks.json data/news.json _site/data/
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy Pages site
+        id: deployment
+        uses: actions/deploy-pages@v4

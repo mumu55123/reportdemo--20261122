@@ -90,6 +90,10 @@ def load_companies():
                     "market": market,
                     "open": None,
                     "previousClose": None,
+                    "high": None,
+                    "low": None,
+                    "close": None,
+                    "marketClosed": False,
                 })
     return items
 
@@ -103,9 +107,12 @@ def parse_price(value):
         return None
 
 
-def update_quotes(items):
-    # TWSE MIS exposes today's open as `o` and the prior close as `y`.
-    today = datetime.now(TZ).strftime("%Y%m%d")
+def update_quotes(items, now):
+    # TWSE MIS exposes today's open/high/low/latest price as o/h/l/z and prior close as y.
+    today = now.strftime("%Y%m%d")
+    market_closed = now.time() >= time(13, 30)
+    for stock in items:
+        stock["marketClosed"] = market_closed
     for offset in range(0, len(items), 65):
         group = items[offset:offset + 65]
         channels = [
@@ -127,6 +134,9 @@ def update_quotes(items):
                     stock["name"] = row.get("n") or stock["name"]
                     row_date = re.sub(r"\D", "", row.get("d", ""))
                     stock["open"] = parse_price(row.get("o")) if row_date == today else None
+                    stock["high"] = parse_price(row.get("h")) if row_date == today else None
+                    stock["low"] = parse_price(row.get("l")) if row_date == today else None
+                    stock["close"] = parse_price(row.get("z")) if row_date == today and market_closed else None
                     stock["previousClose"] = parse_price(row.get("y"))
         except Exception as exc:
             print(f"Quote batch {offset // 65 + 1} failed: {exc}", flush=True)
@@ -220,7 +230,7 @@ def main():
     if not stocks:
         raise RuntimeError("The exchange directory returned no stocks.")
     print(f"Loaded {len(stocks)} stocks; collecting open and previous close...", flush=True)
-    update_quotes(stocks)
+    update_quotes(stocks, datetime.now(TZ))
     if not any(stock["open"] is not None or stock["previousClose"] is not None for stock in stocks):
         raise RuntimeError("TWSE MIS returned no quote data.")
     write_json("stocks.json", {"updatedAt": datetime.now(TZ).isoformat(), "items": stocks})
