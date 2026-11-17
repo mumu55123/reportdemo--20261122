@@ -5,9 +5,8 @@ on:
   push:
     branches: [main]
   schedule:
-    # 09:05 Taipei time (UTC+8), Monday to Friday. GitHub can delay scheduled runs.
-    - cron: '5 1 * * 1-5'
-    - cron: '40 5 * * 1-5'
+    # Refresh stock data and publish the site every 10 minutes.
+    - cron: '*/10 * * * *'
 
 permissions:
   contents: read
