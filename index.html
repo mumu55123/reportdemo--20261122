@@ -211,7 +211,7 @@
 
     .quote-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 150px));
       gap: 9px;
       margin: 12px 0;
     }
@@ -314,7 +314,7 @@
 
     .stockquote {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 150px));
       gap: 9px;
       margin-top: 12px;
     }
@@ -347,7 +347,7 @@
     .code {
       padding-top: 5px;
       color: #738178;
-      font-size: 10px;
+      font-size: 14px;
       font-variant-numeric: tabular-nums;
     }
 
@@ -520,7 +520,7 @@
       </form>
 
       <div class="hint">
-        可搜尋台灣上市櫃股票。每日行情與新聞由 GitHub Actions 自動更新。
+        可搜尋台灣上市櫃股票。行情盤中每 5 分鐘更新，其餘時段每 10 分鐘更新。
       </div>
       <div class="quick" id="quick"></div>
     </section>
@@ -529,7 +529,7 @@
       <section class="panel search-panel">
         <div class="panelhead">
           <h2>搜尋結果</h2>
-          <span class="eyebrow">每日更新</span>
+          <span class="eyebrow">盤中每 5 分鐘更新</span>
         </div>
         <div class="results" id="results">
           <div class="empty">
@@ -627,6 +627,11 @@
         stocks.splice(0, stocks.length, ...(stockData.items || []));
 
         drawStocks();
+
+        const query = document.getElementById("query").value.trim();
+        if (query) {
+          search(query);
+        }
 
         if (newsResponse.ok) {
           const newsData = await newsResponse.json();
@@ -894,6 +899,30 @@
         }).format(now);
     }
 
+    function isTaiwanMarketHours(date = new Date()) {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Taipei",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).formatToParts(date);
+      const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+      const weekday = !["Sat", "Sun"].includes(values.weekday);
+      const minutes = Number(values.hour) * 60 + Number(values.minute);
+
+      return weekday && minutes >= 9 * 60 && minutes <= 13 * 60 + 30;
+    }
+
+    function scheduleDataRefresh() {
+      const delay = (isTaiwanMarketHours() ? 5 : 10) * 60 * 1000;
+
+      window.setTimeout(async () => {
+        await loadData();
+        scheduleDataRefresh();
+      }, delay);
+    }
+
     document.getElementById("searchForm").addEventListener("submit", (event) => {
       event.preventDefault();
       search(document.getElementById("query").value);
@@ -922,7 +951,7 @@
     updateTaiwanClock();
     setInterval(updateTaiwanClock, 1000);
     loadData();
-    setInterval(loadData, 10 * 60 * 1000);
+    scheduleDataRefresh();
   </script>
 </body>
 </html>
