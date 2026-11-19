@@ -496,7 +496,7 @@
       <div class="top-copy">
         <div class="brand">TAIWAN MARKET WATCH</div>
         <h1>台股情報查詢系統</h1>
-        <p>查詢上市櫃股票，快速前往 Yahoo 股市與鉅亨網查看資訊</p>
+        <p>查詢上市櫃股票(不含ETF)，快速前往 Yahoo 股市與鉅亨網查看資訊</p>
       </div>
 
       <div class="clockbox">
@@ -520,7 +520,7 @@
       </form>
 
       <div class="hint">
-        可搜尋台灣上市櫃股票。行情盤中每 5 分鐘更新，其餘時段每 10 分鐘更新。
+        可搜尋台灣上市櫃股票。行情盤中每 5 分鐘更新。
       </div>
       <div class="quick" id="quick"></div>
     </section>
@@ -802,7 +802,7 @@
 
         const quoteItems = [
           ["當日開盤", stock.open, false],
-          ["當日收盤", stock.close, !stock.marketClosed],
+          ["當日收盤", stock.close, ],
           ["當日高點", stock.high, false],
           ["當日低點", stock.low, false],
           ["昨日收盤", stock.previousClose, false],
