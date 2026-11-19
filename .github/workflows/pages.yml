@@ -5,8 +5,20 @@ on:
   push:
     branches: [main]
   schedule:
-    # Refresh stock data and publish the site every 10 minutes.
-    - cron: '*/10 * * * *'
+    # 台北時間：平日盤中每 5 分鐘更新一次。
+    - cron: '*/5 9-12 * * 1-5'
+      timezone: 'Asia/Taipei'
+    - cron: '0,5,10,15,20,25,30 13 * * 1-5'
+      timezone: 'Asia/Taipei'
+    # 平日非盤中與週末每 10 分鐘更新一次。
+    - cron: '*/10 0-8 * * 1-5'
+      timezone: 'Asia/Taipei'
+    - cron: '40,50 13 * * 1-5'
+      timezone: 'Asia/Taipei'
+    - cron: '*/10 14-23 * * 1-5'
+      timezone: 'Asia/Taipei'
+    - cron: '*/10 * * * 0,6'
+      timezone: 'Asia/Taipei'
 
 permissions:
   contents: read
