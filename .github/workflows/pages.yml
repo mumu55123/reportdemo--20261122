@@ -5,19 +5,19 @@ on:
   push:
     branches: [main]
   schedule:
-    # 台北時間：平日盤中每 5 分鐘更新一次。
-    - cron: '*/5 9-12 * * 1-5'
+    # 台北時間：平日盤中每 5 分鐘更新，避開整點排程尖峰。
+    - cron: '2-57/5 9-12 * * 1-5'
       timezone: 'Asia/Taipei'
-    - cron: '0,5,10,15,20,25,30 13 * * 1-5'
+    - cron: '5-30/5 13 * * 1-5'
       timezone: 'Asia/Taipei'
-    # 平日非盤中與週末每 10 分鐘更新一次。
-    - cron: '*/10 0-8 * * 1-5'
+    # 台北時間：平日非盤中及週末每 10 分鐘更新。
+    - cron: '3-53/10 0-8 * * 1-5'
       timezone: 'Asia/Taipei'
-    - cron: '40,50 13 * * 1-5'
+    - cron: '35,45,55 13 * * 1-5'
       timezone: 'Asia/Taipei'
-    - cron: '*/10 14-23 * * 1-5'
+    - cron: '3-53/10 14-23 * * 1-5'
       timezone: 'Asia/Taipei'
-    - cron: '*/10 * * * 0,6'
+    - cron: '3-53/10 * * * 0,6'
       timezone: 'Asia/Taipei'
 
 permissions:
